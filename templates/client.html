@@ -5,27 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>WebSocket Server</title>
-</head>
-<body>
-    <input id="input" type="text"  placeholder="your voice"/>
-    <button onclick="send()">Send</button>
-    <pre id="output"></pre>
+    <style>
+       #container{
+            width: 100vw;
+            height: 90vh;
+            border-right: 1px solid #ddd;
+            border-left: 1px solid #ddd;
+            background-color: #eee;
+        }
+        #output{
+            overflow: auto;
+            height:100%;
+            border-right: 1px solid #ddd;
+            border-left: 1px solid #ddd;
+            background-color: #eee;
+            box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.2) inset;
+        }
+         .message {
+            margin: 0px;
+            padding: 0 14px;
+            font-size: 16px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        .boxleft {
+            float: left;
+            line-height: 1.3em;
+        }
+        .boxleft .messagebox {
+                color: #333;
+                background: #fff;
+                border: 2px solid #13178E;
+                border-radius: 30px 30px 30px 0px;
+                margin-right: 50px;
+            }
+        .boxright {
+            float: right;
+            line-height: 1.3em;
+        }
+        .boxright .messagebox {
+                color: #fff;
+                background: #13178E;
+                border: 2px solid #13178E;
+                border-radius: 30px 30px 0px 30px;
+                margin-left: 50px;
+            }
+        .boxclear {
+            clear: both;
+
+        }
+    </style>
     <script>
-        var input = document.getElementById('input');
-        var output = document.getElementById('output');
         var socket = new WebSocket("ws://" + window.location.host + "/websocket/{{.identifier}}");
+        window.onload = (event) => {
+            var output = document.getElementById('output');
+            socket.onopen = function() {
+               output.appendChild(makeMessageBox("Connection OK", false));
+               output.appendChild(clearBox());
+            };
 
-        socket.onopen = function() {
-           output.innerHTML += "Connection OK\n";
-        };
 
+        }
         socket.onmessage = function(e) {
-            console.log(e.data)
+            var output = document.getElementById('output');
             let messageJson =  JSON.parse(e.data);
-            output.innerHTML += messageJson.message + "\n";
+             output.appendChild(makeMessageBox(messageJson.message, messageJson.isSelf));
+             output.appendChild(clearBox());
         };
+        function makeMessageBox(message, isself){
+            var chatDom =[];
+            var p = function(dom){
+                chatDom.push(dom);
+            };
+            p('<div class="messagebox">');
+            p('<div class="message">' + message + '</div>');
+            p('</div>');
 
+            var mainelem = document.createElement("div");
+            if (isself==true){
+                mainelem.setAttribute("class", "boxright");
+            }else{
+                mainelem.setAttribute("class", "boxleft");
+           }
+             mainelem.innerHTML = chatDom.join('');
+            return mainelem;
+        }
+        function clearBox(){
+             var mainelem = document.createElement("div");
+            mainelem.setAttribute("class", "boxclear");
+            return mainelem;
+        }
         function send() {
+            var input = document.getElementById('input');
             socket.send(JSON.stringify(
                 {
                     message: input.value
@@ -34,5 +105,17 @@
             input.value = "";
         };
     </script>
+</head>
+<body>
+    <header>
+        チャット
+    </header>
+    <div id="container">
+        <div id="output"></div>
+        <div id="sendbox">
+            <input id="input" type="text" placeholder="your voice"/>
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
 </body>
 </html>

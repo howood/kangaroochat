@@ -19,7 +19,7 @@ type BroadCastMessanger struct {
 func NewBroadCastMessanger(ctx context.Context) repository.BroadCasterRepository {
 	return &BroadCastMessanger{
 		broadCaster: &entity.BroadCaster{
-			Clients:   make(map[*websocket.Conn]string),
+			Clients:   make(map[*websocket.Conn]entity.Client),
 			Broadcast: make(chan entity.ChatMessage),
 		},
 		ctx: ctx,
@@ -27,8 +27,11 @@ func NewBroadCastMessanger(ctx context.Context) repository.BroadCasterRepository
 }
 
 //SetNewClient is set new Client
-func (bcm *BroadCastMessanger) SetNewClient(websocket *websocket.Conn, identifier string) {
-	bcm.broadCaster.Clients[websocket] = identifier
+func (bcm *BroadCastMessanger) SetNewClient(websocket *websocket.Conn, identifier, clientid string) {
+	bcm.broadCaster.Clients[websocket] = entity.Client{
+		Identifier: identifier,
+		ClientID:   clientid,
+	}
 }
 
 //DeleteClient is delete Client
@@ -37,7 +40,7 @@ func (bcm *BroadCastMessanger) DeleteClient(websocket *websocket.Conn) {
 }
 
 //ReadMessage is send message
-func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier string) error {
+func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier, clientid string) error {
 	// Read
 	var message entity.ChatMessage
 	err := websocket.ReadJSON(&message)
@@ -46,6 +49,7 @@ func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier
 		return err
 	}
 	message.Identifier = identifier
+	message.ClientID = clientid
 	bcm.broadCaster.Broadcast <- message
 	return nil
 }
@@ -56,14 +60,17 @@ func (bcm *BroadCastMessanger) BroadcastMessages() {
 		// メッセージ受け取り
 		message := <-bcm.broadCaster.Broadcast
 		// クライアントの数だけループ
-		for client, identifier := range bcm.broadCaster.Clients {
+		for clientsocket, client := range bcm.broadCaster.Clients {
 			//　書き込む
-			if message.Identifier == identifier {
-				err := client.WriteJSON(message)
+			if message.Identifier == client.Identifier {
+				if message.ClientID == client.ClientID {
+					message.IsSelf = true
+				}
+				err := clientsocket.WriteJSON(message)
 				if err != nil {
 					log.Error(bcm.ctx, err)
-					client.Close()
-					bcm.DeleteClient(client)
+					clientsocket.Close()
+					bcm.DeleteClient(clientsocket)
 				}
 			}
 		}
