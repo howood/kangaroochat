@@ -19,7 +19,7 @@ func main() {
 	if os.Getenv("SERVER_PORT") != "" {
 		DefaultPort = os.Getenv("SERVER_PORT")
 	}
-	renderer := &handler.HtmlTemplate{
+	renderer := &handler.HTMLTemplate{
 		Templates: template.Must(handler.LoadTemplate("*.html")),
 	}
 	braodcaster := actor.NewBroadCastMessanger(context.Background())
