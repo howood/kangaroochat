@@ -6,6 +6,6 @@ import (
 
 // BroadCaster entity
 type BroadCaster struct {
-	Clients   map[*websocket.Conn]string
+	Clients   map[*websocket.Conn]Client
 	Broadcast chan ChatMessage
 }

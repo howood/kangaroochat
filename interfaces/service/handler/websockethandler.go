@@ -35,10 +35,10 @@ func (wsh WebSockerHandler) Request(c echo.Context) error {
 		return err
 	}
 	defer ws.Close()
-	wsh.BroadCaster.SetNewClient(ws, identifier)
+	wsh.BroadCaster.SetNewClient(ws, identifier, xRequestID)
 
 	for {
-		if err := wsh.BroadCaster.ReadMessage(ws, identifier); err != nil {
+		if err := wsh.BroadCaster.ReadMessage(ws, identifier, xRequestID); err != nil {
 			log.Error(wsh.ctx, err)
 			break
 		}
