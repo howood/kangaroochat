@@ -30,6 +30,8 @@ func (wsh WebSockerHandler) Request(c echo.Context) error {
 	log.Info(wsh.ctx, c.Request().Header)
 	log.Info(wsh.ctx, identifier)
 
+	claims := wsh.getClaimsFromToken(c)
+
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		return err
@@ -38,7 +40,7 @@ func (wsh WebSockerHandler) Request(c echo.Context) error {
 	wsh.BroadCaster.SetNewClient(ws, identifier, xRequestID)
 
 	for {
-		if err := wsh.BroadCaster.ReadMessage(ws, identifier, xRequestID); err != nil {
+		if err := wsh.BroadCaster.ReadMessage(ws, identifier, xRequestID, claims.Name); err != nil {
 			log.Error(wsh.ctx, err)
 			break
 		}

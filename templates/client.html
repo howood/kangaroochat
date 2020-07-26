@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>WebSocket Server</title>
+    <title>Kangaroo Chat</title>
     <style>
        #container{
             width: 100vw;
@@ -21,7 +21,14 @@
             background-color: #eee;
             box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.2) inset;
         }
-         .message {
+        .user {
+            margin: 0px;
+            padding: 0 14px;
+            font-size: 10px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        .message {
             margin: 0px;
             padding: 0 14px;
             font-size: 16px;
@@ -52,6 +59,7 @@
             }
         .boxclear {
             clear: both;
+            margin-bottom:10px;
 
         }
     </style>
@@ -60,7 +68,7 @@
         window.onload = (event) => {
             var output = document.getElementById('output');
             socket.onopen = function() {
-               output.appendChild(makeMessageBox("Connection OK", false));
+               output.appendChild(makeMessageBox("", "Connection OK", false));
                output.appendChild(clearBox());
             };
 
@@ -69,15 +77,16 @@
         socket.onmessage = function(e) {
             var output = document.getElementById('output');
             let messageJson =  JSON.parse(e.data);
-             output.appendChild(makeMessageBox(messageJson.message, messageJson.isSelf));
+             output.appendChild(makeMessageBox(messageJson.username, messageJson.message, messageJson.isSelf));
              output.appendChild(clearBox());
         };
-        function makeMessageBox(message, isself){
+        function makeMessageBox(username, message, isself){
             var chatDom =[];
             var p = function(dom){
                 chatDom.push(dom);
             };
             p('<div class="messagebox">');
+            p('<div class="user">' + username + '</div>');
             p('<div class="message">' + message + '</div>');
             p('</div>');
 
@@ -108,7 +117,7 @@
 </head>
 <body>
     <header>
-        チャット
+        {{.roomname}} ようこそ{{.username}} さん
     </header>
     <div id="container">
         <div id="output"></div>
