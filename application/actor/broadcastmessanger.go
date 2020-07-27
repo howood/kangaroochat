@@ -40,7 +40,7 @@ func (bcm *BroadCastMessanger) DeleteClient(websocket *websocket.Conn) {
 }
 
 //ReadMessage is send message
-func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier, clientid string) error {
+func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier, clientid, username string) error {
 	// Read
 	var message entity.ChatMessage
 	err := websocket.ReadJSON(&message)
@@ -50,6 +50,7 @@ func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier
 	}
 	message.Identifier = identifier
 	message.ClientID = clientid
+	message.UserName = username
 	bcm.broadCaster.Broadcast <- message
 	return nil
 }
