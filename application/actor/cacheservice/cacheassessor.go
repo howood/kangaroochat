@@ -2,12 +2,12 @@ package cacheservice
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/howood/kangaroochat/infrastructure/client/caches"
 	log "github.com/howood/kangaroochat/infrastructure/logger"
+	"github.com/howood/kangaroochat/library/utils"
 )
 
 // CacheAssessor struct
@@ -19,8 +19,8 @@ type CacheAssessor struct {
 // NewCacheAssessor creates a new CacheAssessor
 func NewCacheAssessor(ctx context.Context) *CacheAssessor {
 	var I *CacheAssessor
-	log.Debug(ctx, "use:"+os.Getenv("CACHE_TYPE"))
-	switch os.Getenv("CACHE_TYPE") {
+	log.Debug(ctx, "use:"+utils.GetOsEnv("CACHE_TYPE", "gocache"))
+	switch utils.GetOsEnv("CACHE_TYPE", "gocache") {
 	case "gocache":
 		I = &CacheAssessor{
 			instance: caches.NewGoCacheClient(ctx),
@@ -59,7 +59,7 @@ func (ca *CacheAssessor) Delete(index string) error {
 
 // GetChacheExpired get cache expired
 func GetChacheExpired() time.Duration {
-	expired, err := strconv.Atoi(os.Getenv("CACHE_EXPIED"))
+	expired, err := strconv.Atoi(utils.GetOsEnv("CACHE_EXPIED", "3600"))
 	if err != nil {
 		panic(err)
 	}

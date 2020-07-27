@@ -4,23 +4,20 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"os"
 
 	"github.com/howood/kangaroochat/application/actor"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/infrastructure/custommiddleware"
 	"github.com/howood/kangaroochat/interfaces/service/handler"
+	"github.com/howood/kangaroochat/library/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 // DefaultPort is default port of server
-var DefaultPort = "8080"
+var DefaultPort = utils.GetOsEnv("SERVER_PORT", "8080")
 
 func main() {
-	if os.Getenv("SERVER_PORT") != "" {
-		DefaultPort = os.Getenv("SERVER_PORT")
-	}
 	renderer := &handler.HTMLTemplate{
 		Templates: template.Must(handler.LoadTemplate("*.html")),
 	}

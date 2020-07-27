@@ -2,21 +2,23 @@ package actor
 
 import (
 	"context"
-	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/domain/repository"
 	log "github.com/howood/kangaroochat/infrastructure/logger"
+	"github.com/howood/kangaroochat/library/utils"
 )
 
 // TokenExpired is token's expired
-var TokenExpired = os.Getenv("TOKEN_EXPIED")
+var TokenExpired = utils.GetOsEnv("TOKEN_EXPIED", "3600")
 
 // TokenSecret define token secrets
-var TokenSecret = os.Getenv("TOKEN_SECRET")
+var TokenSecret = utils.GetOsEnv("TOKEN_SECRET", "secretsecretdsfdsfsdfdsfsdf")
 
+//JWTContextKey is context key name
 const JWTContextKey = "kangaroouser"
 
 // JwtOperator struct
@@ -27,14 +29,14 @@ type JwtOperator struct {
 
 // NewJwtOperator creates a new JwtClaimsRepository
 func NewJwtOperator(ctx context.Context, username string, admin bool, identifier string) repository.JwtClaimsRepository {
-	expired, _ := time.ParseDuration(TokenExpired)
+	expired, _ := strconv.ParseInt(TokenExpired, 10, 64)
 	return &JwtOperator{
 		jwtClaims: &entity.JwtClaims{
 			Name:       username,
 			Admin:      admin,
 			Identifier: identifier,
 			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: time.Now().Add(time.Minute * expired).Unix(),
+				ExpiresAt: time.Now().Add(time.Second * time.Duration(expired)).Unix(),
 			},
 		},
 		ctx: ctx,

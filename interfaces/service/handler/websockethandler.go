@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// WebSocket 更新用
+// WebSocket updater
 var upgrader = websocket.Upgrader{}
 
 // WebSockerHandler struct
@@ -19,7 +19,7 @@ type WebSockerHandler struct {
 	BroadCaster repository.BroadCasterRepository
 }
 
-// Request is chat request
+// Request is websocket request
 func (wsh WebSockerHandler) Request(c echo.Context) error {
 	requesturi := c.Request().URL.RequestURI()
 	xRequestID := requestid.GetRequestID(c.Request())

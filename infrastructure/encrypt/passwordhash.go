@@ -12,11 +12,19 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
+// SaltBufLen is Salt buffer length
 const SaltBufLen = 14
+
+//HashtypeScrypt is Hashtype scrypt
 const HashtypeScrypt = "scrypt"
+
+//HashtypeBcrypt is Hashtype bcrypt
 const HashtypeBcrypt = "bcrypt"
+
+//WrongPasswordMessage is error message
 const WrongPasswordMessage = "Wrong Password"
 
+//PasswordHash struct
 type PasswordHash struct {
 	Type         string
 	ScryptN      int
@@ -69,6 +77,7 @@ func (ph PasswordHash) comparePasswordWithBcrypt(hashedpassword, password string
 	return bcrypt.CompareHashAndPassword([]byte(hashedpassword), []byte(password))
 }
 
+// GetHashed get hashed password and salt
 func (ph PasswordHash) GetHashed(password string) (string, string, error) {
 	switch ph.Type {
 	case HashtypeScrypt:
@@ -84,6 +93,7 @@ func (ph PasswordHash) GetHashed(password string) (string, string, error) {
 	}
 }
 
+// Compare compares hashed password and string password
 func (ph PasswordHash) Compare(hashedpassword, password, saltstr string) error {
 	switch ph.Type {
 	case HashtypeScrypt:

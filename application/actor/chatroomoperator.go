@@ -21,7 +21,7 @@ func NewChatRoomOperator(ctx context.Context) repository.ChatRoomRepository {
 	return &ChatRoomOperator{ctx: ctx}
 }
 
-//Set sets contentType,lastModified and  content to  cahced content
+//Set sets roomname and password to  roomdata
 func (e *ChatRoomOperator) Set(roomname, password string) error {
 	hashedpassword, salt, err := PasswordOperator{}.GetHashedPassword(password)
 	if err != nil {
@@ -34,22 +34,22 @@ func (e *ChatRoomOperator) Set(roomname, password string) error {
 	return nil
 }
 
-// GetRoomName returns contenttype of cahced content
+// GetRoomName returns roomname of roomdata
 func (e *ChatRoomOperator) GetRoomName() string {
 	return e.roomData.RoomName
 }
 
-// GetIdentifier returns contenttype of cahced content
+// GetIdentifier returns Identifier of roomdata
 func (e *ChatRoomOperator) GetIdentifier() string {
 	return e.roomData.Identifier
 }
 
-// ComparePassword returns content of cahced content
+// ComparePassword compares input password to roomdata password
 func (e *ChatRoomOperator) ComparePassword(password string) error {
 	return PasswordOperator{}.ComparePassword(e.roomData.HashedPassword, password, e.roomData.Salt)
 }
 
-// GobEncode serialized cached data to bytes
+// GobEncode serialized roomdata to bytes
 func (e *ChatRoomOperator) GobEncode() ([]byte, error) {
 	w := new(bytes.Buffer)
 	encoder := gob.NewEncoder(w)
@@ -69,7 +69,7 @@ func (e *ChatRoomOperator) GobEncode() ([]byte, error) {
 	return w.Bytes(), nil
 }
 
-// GobDecode decode bytes to cached data
+// GobDecode decode bytes to roomdata
 func (e *ChatRoomOperator) GobDecode(buf []byte) error {
 	r := bytes.NewBuffer(buf)
 	decoder := gob.NewDecoder(r)

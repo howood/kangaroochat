@@ -17,7 +17,7 @@ type AccountHandler struct {
 	BaseHandler
 }
 
-// CreateGet is chat request
+// CreateGet is shown to create chatroom
 func (ah AccountHandler) CreateGet(c echo.Context) error {
 	requesturi := c.Request().URL.RequestURI()
 	xRequestID := requestid.GetRequestID(c.Request())
@@ -31,7 +31,7 @@ func (ah AccountHandler) CreateGet(c echo.Context) error {
 	return c.Render(http.StatusOK, "create.html", viewval)
 }
 
-// Create is chat request
+// Create is request to create chatroom
 func (ah AccountHandler) Create(c echo.Context) error {
 	requesturi := c.Request().URL.RequestURI()
 	xRequestID := requestid.GetRequestID(c.Request())
@@ -50,7 +50,7 @@ func (ah AccountHandler) Create(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, redirecturl)
 }
 
-// LoginGet is chat request
+// LoginGet is shown to login
 func (ah AccountHandler) LoginGet(c echo.Context) error {
 	requesturi := c.Request().URL.RequestURI()
 	xRequestID := requestid.GetRequestID(c.Request())
@@ -66,7 +66,7 @@ func (ah AccountHandler) LoginGet(c echo.Context) error {
 	return c.Render(http.StatusOK, "login.html", viewval)
 }
 
-// Create is chat request
+// Login is request to login
 func (ah AccountHandler) Login(c echo.Context) error {
 	requesturi := c.Request().URL.RequestURI()
 	xRequestID := requestid.GetRequestID(c.Request())
@@ -86,12 +86,11 @@ func (ah AccountHandler) Login(c echo.Context) error {
 	if token, err = ah.createToken(identifier, username); err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
 	}
-	if cookieop, err := actor.NewCookieOperator(ah.ctx, c.Request()); err != nil {
-		log.Error(ah.ctx, err)
-	} else {
-		cookieop.Set(actor.RoomTokenKey, token)
-		c.SetCookie(cookieop.GetCookie())
-	}
+
+	cookieop := actor.NewCookieOperator(ah.ctx, c.Request())
+	cookieop.Set(actor.RoomTokenKey, token)
+	c.SetCookie(cookieop.GetCookie())
+
 	redirecturl := "/client/" + identifier
 	return c.Redirect(http.StatusSeeOther, redirecturl)
 }

@@ -3,52 +3,48 @@ package actor
 import (
 	"context"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
-	"github.com/gorilla/sessions"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/domain/repository"
+	"github.com/howood/kangaroochat/library/utils"
 )
 
-// SessionExpired is token's expired
-var SessionExpired = os.Getenv("SESSION_EXPIED")
+// CookieExpired is cookie's expired
+var CookieExpired = utils.GetOsEnv("COOKIE_EXPIED", "3600")
 
-const RoomTokenKey = "room_token"
+// RoomTokenKey is cookie's key name of RoomToken
+const RoomTokenKey = "kc_room_token"
 
-var sessionstore = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-
-// JwtOperator struct
-type SessionOperator struct {
+// CookieOperator struct
+type CookieOperator struct {
 	cookie  *entity.Cookie
 	expired time.Duration
 	ctx     context.Context
 }
 
-// NewSessionOperator creates a new JwtClaimsRepository
-func NewCookieOperator(ctx context.Context, r *http.Request) (repository.CookieRepository, error) {
-	expired, err := strconv.Atoi(SessionExpired)
-	if err != nil {
-		return nil, err
-	}
-	return &SessionOperator{
+// NewCookieOperator creates a new CookieRepository
+func NewCookieOperator(ctx context.Context, r *http.Request) repository.CookieRepository {
+	expired, _ := strconv.ParseInt(CookieExpired, 10, 64)
+	return &CookieOperator{
 		cookie: &entity.Cookie{
 			Cookie: new(http.Cookie),
 		},
-		expired: time.Duration(int64(expired)),
+		expired: time.Duration(expired),
 		ctx:     ctx,
-	}, nil
+	}
 }
 
-// Set creates a new token
-func (so *SessionOperator) Set(key, value string) {
-	so.cookie.Cookie.Name = key
-	so.cookie.Cookie.Value = value
-	so.cookie.Cookie.Expires = time.Now().Add(so.expired * time.Minute)
-	so.cookie.Cookie.Path = "/"
+// Set sets to Cookie
+func (co *CookieOperator) Set(key, value string) {
+	co.cookie.Cookie.Name = key
+	co.cookie.Cookie.Value = value
+	co.cookie.Cookie.Expires = time.Now().Add(co.expired * time.Second)
+	co.cookie.Cookie.Path = "/"
 }
 
-func (so *SessionOperator) GetCookie() *http.Cookie {
-	return so.cookie.Cookie
+//GetCookie get cookie struct
+func (co *CookieOperator) GetCookie() *http.Cookie {
+	return co.cookie.Cookie
 }
