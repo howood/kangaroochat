@@ -54,16 +54,20 @@ func (e *ChatRoomOperator) GobEncode() ([]byte, error) {
 	w := new(bytes.Buffer)
 	encoder := gob.NewEncoder(w)
 
-	if err := encoder.Encode(e.roomData.Identifier); err != nil {
-		return nil, err
+	var err error
+	if err == nil {
+		err = encoder.Encode(e.roomData.Identifier)
 	}
-	if err := encoder.Encode(e.roomData.RoomName); err != nil {
-		return nil, err
+	if err == nil {
+		err = encoder.Encode(e.roomData.RoomName)
 	}
-	if err := encoder.Encode(e.roomData.HashedPassword); err != nil {
-		return nil, err
+	if err == nil {
+		err = encoder.Encode(e.roomData.HashedPassword)
 	}
-	if err := encoder.Encode(e.roomData.Salt); err != nil {
+	if err == nil {
+		err = encoder.Encode(e.roomData.Salt)
+	}
+	if err != nil {
 		return nil, err
 	}
 	return w.Bytes(), nil
@@ -74,17 +78,18 @@ func (e *ChatRoomOperator) GobDecode(buf []byte) error {
 	r := bytes.NewBuffer(buf)
 	decoder := gob.NewDecoder(r)
 
-	if err := decoder.Decode(&e.roomData.Identifier); err != nil {
-		return err
+	var err error
+	if err == nil {
+		err = decoder.Decode(&e.roomData.Identifier)
 	}
-	if err := decoder.Decode(&e.roomData.RoomName); err != nil {
-		return err
+	if err == nil {
+		err = decoder.Decode(&e.roomData.RoomName)
 	}
-	if err := decoder.Decode(&e.roomData.HashedPassword); err != nil {
-		return err
+	if err == nil {
+		err = decoder.Decode(&e.roomData.HashedPassword)
 	}
-	if err := decoder.Decode(&e.roomData.Salt); err != nil {
-		return err
+	if err == nil {
+		err = decoder.Decode(&e.roomData.Salt)
 	}
-	return nil
+	return err
 }
