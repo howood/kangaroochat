@@ -11,6 +11,7 @@
         ルーム作成
     </header>
     <div id="container">
+        <p>{{if .errormsg}} {{.errormsg}}{{end}}</p>
         <form action="" method="POST">
             <input type="hidden" name="csrftoken" value="{{.csrftoken}}">
             <p>Room Password: <input type="password" name="password" placeholder="Room Password"></p>

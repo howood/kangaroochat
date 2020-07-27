@@ -7,6 +7,7 @@ import (
 
 	"github.com/howood/kangaroochat/application/actor"
 	"github.com/howood/kangaroochat/application/actor/cacheservice"
+	"github.com/howood/kangaroochat/domain/entity"
 	log "github.com/howood/kangaroochat/infrastructure/logger"
 	"github.com/howood/kangaroochat/infrastructure/requestid"
 	"github.com/labstack/echo/v4"
@@ -39,11 +40,16 @@ func (ah AccountHandler) Create(c echo.Context) error {
 	log.Info(ah.ctx, "========= START REQUEST : "+requesturi)
 	log.Info(ah.ctx, c.Request().Method)
 	log.Info(ah.ctx, c.Request().Header)
-	roomname := c.FormValue("roomname")
-	password := c.Param("password")
+	form := entity.CreateRoomForm{}
+	if err := c.Bind(&form); err != nil {
+		return ah.errorResponse(c, http.StatusBadRequest, "create.html", err)
+	}
+	if err := ah.validate(form); err != nil {
+		return ah.errorResponse(c, http.StatusBadRequest, "create.html", err)
+	}
 	var identifier string
 	var err error
-	if identifier, err = ah.setRoom(roomname, password); err != nil {
+	if identifier, err = ah.setRoom(form.RoomName, form.Password); err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "create.html", err)
 	}
 	redirecturl := "/login/" + identifier
@@ -76,14 +82,19 @@ func (ah AccountHandler) Login(c echo.Context) error {
 	log.Info(ah.ctx, c.Request().Method)
 	log.Info(ah.ctx, c.Request().Header)
 	log.Info(ah.ctx, identifier)
-	username := c.FormValue("username")
-	password := c.Param("password")
-	if err := ah.loginRoom(identifier, password); err != nil {
+	form := entity.LoginRoomForm{}
+	if err := c.Bind(&form); err != nil {
+		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
+	}
+	if err := ah.validate(form); err != nil {
+		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
+	}
+	if err := ah.loginRoom(identifier, form.Password); err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
 	}
 	var token string
 	var err error
-	if token, err = ah.createToken(identifier, username); err != nil {
+	if token, err = ah.createToken(identifier, form.UserName); err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
 	}
 
@@ -143,8 +154,8 @@ func (ah AccountHandler) createToken(identifier, username string) (string, error
 
 func (ah AccountHandler) errorResponse(c echo.Context, statuscode int, html string, err error) error {
 	viewval := map[string]interface{}{
-		"csrftoken":      c.Get("csrf").(string),
-		"errormsgdetail": err.Error(),
+		"csrftoken": c.Get("csrf").(string),
+		"errormsg":  err.Error(),
 	}
 	return c.Render(statuscode, html, viewval)
 

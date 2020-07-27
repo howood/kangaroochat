@@ -5,6 +5,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/howood/kangaroochat/application/actor"
+	"github.com/howood/kangaroochat/application/validator"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/labstack/echo/v4"
 )
@@ -29,4 +30,9 @@ func (bh BaseHandler) getClaimsFromToken(c echo.Context) *entity.JwtClaims {
 	user := c.Get(actor.JWTContextKey).(*jwt.Token)
 	claims := user.Claims.(*entity.JwtClaims)
 	return claims
+}
+
+func (bh BaseHandler) validate(stc interface{}) error {
+	val := validator.NewValidator(bh.ctx)
+	return val.Validate(stc)
 }
