@@ -41,14 +41,17 @@ func (ah AccountHandler) Create(c echo.Context) error {
 	log.Info(ah.ctx, c.Request().Method)
 	log.Info(ah.ctx, c.Request().Header)
 	form := entity.CreateRoomForm{}
-	if err := c.Bind(&form); err != nil {
-		return ah.errorResponse(c, http.StatusBadRequest, "create.html", err)
+	var err error
+	if err == nil {
+		err = c.Bind(&form)
 	}
-	if err := ah.validate(form); err != nil {
+	if err == nil {
+		err = ah.validate(form)
+	}
+	if err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "create.html", err)
 	}
 	var identifier string
-	var err error
 	if identifier, err = ah.setRoom(form.RoomName, form.Password); err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "create.html", err)
 	}
@@ -83,18 +86,21 @@ func (ah AccountHandler) Login(c echo.Context) error {
 	log.Info(ah.ctx, c.Request().Header)
 	log.Info(ah.ctx, identifier)
 	form := entity.LoginRoomForm{}
-	if err := c.Bind(&form); err != nil {
-		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
-	}
-	if err := ah.validate(form); err != nil {
-		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
-	}
-	if err := ah.loginRoom(identifier, form.Password); err != nil {
-		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
-	}
 	var token string
 	var err error
-	if token, err = ah.createToken(identifier, form.UserName); err != nil {
+	if err == nil {
+		err = c.Bind(&form)
+	}
+	if err == nil {
+		err = ah.validate(form)
+	}
+	if err == nil {
+		err = ah.loginRoom(identifier, form.Password)
+	}
+	if err == nil {
+		token, err = ah.createToken(identifier, form.UserName)
+	}
+	if err != nil {
 		return ah.errorResponse(c, http.StatusBadRequest, "login.html", err)
 	}
 
