@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/domain/repository"
 	log "github.com/howood/kangaroochat/infrastructure/logger"
