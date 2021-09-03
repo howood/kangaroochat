@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/howood/kangaroochat/application/actor"
 	"github.com/howood/kangaroochat/application/validator"
 	"github.com/howood/kangaroochat/domain/entity"
