@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt/v4"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/domain/repository"
 	log "github.com/howood/kangaroochat/infrastructure/logger"
@@ -18,7 +18,7 @@ var TokenExpired = utils.GetOsEnv("TOKEN_EXPIED", "3600")
 // TokenSecret define token secrets
 var TokenSecret = utils.GetOsEnv("TOKEN_SECRET", "secretsecretdsfdsfsdfdsfsdf")
 
-//JWTContextKey is context key name
+// JWTContextKey is context key name
 const JWTContextKey = "kangaroouser"
 
 // JwtOperator struct
@@ -35,8 +35,8 @@ func NewJwtOperator(ctx context.Context, username string, admin bool, identifier
 			Name:       username,
 			Admin:      admin,
 			Identifier: identifier,
-			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: time.Now().Add(time.Second * time.Duration(expired)).Unix(),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expired))),
 			},
 		},
 		ctx: ctx,

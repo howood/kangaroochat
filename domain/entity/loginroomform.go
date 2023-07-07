@@ -2,6 +2,6 @@ package entity
 
 // LoginRoomForm entity
 type LoginRoomForm struct {
-	UserName string `validate:"required,min=8"`
-	Password string `validate:"required"`
+	UserName string `form:"username" validate:"required,min=8"`
+	Password string `form:"password" validate:"required"`
 }
