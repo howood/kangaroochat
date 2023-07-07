@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"html/template"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/howood/kangaroochat/application/actor"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/infrastructure/custommiddleware"
 	"github.com/howood/kangaroochat/interfaces/service/handler"
 	"github.com/howood/kangaroochat/library/utils"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -36,15 +38,17 @@ func main() {
 	e.GET("/login/:identifier", handler.AccountHandler{}.LoginGet)
 	e.POST("/login/:identifier", handler.AccountHandler{}.Login)
 
-	jwtconfig := middleware.JWTConfig{
-		Skipper:     custommiddleware.OptionsMethodSkipper,
-		Claims:      &entity.JwtClaims{},
+	jwtconfig := echojwt.Config{
+		Skipper: custommiddleware.OptionsMethodSkipper,
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(entity.JwtClaims)
+		},
 		SigningKey:  []byte(actor.TokenSecret),
 		TokenLookup: "cookie:" + actor.RoomTokenKey,
 		ContextKey:  actor.JWTContextKey,
 	}
-	e.GET("/websocket/:identifier", handler.WebSockerHandler{BroadCaster: braodcaster}.Request, middleware.JWTWithConfig(jwtconfig))
-	e.GET("/client/:identifier", handler.ClientHandler{}.Request, middleware.JWTWithConfig(jwtconfig))
+	e.GET("/websocket/:identifier", handler.WebSockerHandler{BroadCaster: braodcaster}.Request, echojwt.WithConfig(jwtconfig))
+	e.GET("/client/:identifier", handler.ClientHandler{}.Request, echojwt.WithConfig(jwtconfig))
 
 	go braodcaster.BroadcastMessages()
 

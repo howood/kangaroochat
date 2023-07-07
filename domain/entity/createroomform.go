@@ -2,6 +2,6 @@ package entity
 
 // CreateRoomForm entity
 type CreateRoomForm struct {
-	RoomName string `validate:"required"`
-	Password string `validate:"required,min=8"`
+	RoomName string `form:"roomname" validate:"required"`
+	Password string `form:"password" validate:"required,min=8"`
 }
