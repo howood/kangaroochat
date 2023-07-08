@@ -2,11 +2,9 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
-	"github.com/howood/kangaroochat/application/actor"
-	"github.com/howood/kangaroochat/application/actor/cacheservice"
+	"github.com/howood/kangaroochat/application/usecase"
 	log "github.com/howood/kangaroochat/infrastructure/logger"
 	"github.com/howood/kangaroochat/infrastructure/requestid"
 	"github.com/labstack/echo/v4"
@@ -33,33 +31,11 @@ func (ch ClientHandler) Request(c echo.Context) error {
 		"identifier": identifier,
 		"username":   claims.Name,
 	}
-	if roomname, err := ch.getRoomname(identifier); err != nil {
+	roomname, err := usecase.ClientUsecase{Ctx: ch.ctx}.GetRoomname(identifier)
+	if err != nil {
 		log.Error(ch.ctx, err)
 	} else {
 		viewval["roomname"] = roomname
 	}
 	return c.Render(http.StatusOK, "client.html", viewval)
-}
-
-func (ch ClientHandler) getRoomname(identifier string) (string, error) {
-	cacheAssessor := cacheservice.NewCacheAssessor(ch.ctx)
-	if cachedvalue, cachedfound := cacheAssessor.Get(identifier); cachedfound {
-		chatroom := actor.NewChatRoomOperator(ch.ctx)
-		var err error
-		switch xi := cachedvalue.(type) {
-		case []byte:
-			err = chatroom.GobDecode(xi)
-		case string:
-			err = chatroom.GobDecode([]byte(xi))
-		default:
-			err = errors.New("get cache error")
-		}
-		if err != nil {
-			log.Error(ch.ctx, err.Error())
-			return "", err
-		}
-		return chatroom.GetRoomName(), nil
-	}
-
-	return "", errors.New("No Room")
 }

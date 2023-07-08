@@ -9,7 +9,7 @@ import (
 	"github.com/howood/kangaroochat/application/actor"
 	"github.com/howood/kangaroochat/domain/entity"
 	"github.com/howood/kangaroochat/infrastructure/custommiddleware"
-	"github.com/howood/kangaroochat/interfaces/service/handler"
+	"github.com/howood/kangaroochat/interfaces/handler"
 	"github.com/howood/kangaroochat/library/utils"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
