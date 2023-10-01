@@ -9,38 +9,45 @@ import (
 	log "github.com/howood/kangaroochat/infrastructure/logger"
 )
 
-//BroadCastMessanger is BroadCastMessanger struct
+// BroadCastMessanger is BroadCastMessanger struct
 type BroadCastMessanger struct {
+	repository.BroadCasterRepository
+}
+
+// NewBroadCastMessanger creates a new BroadCasterRepository
+func NewBroadCastMessanger(ctx context.Context) *BroadCastMessanger {
+	return &BroadCastMessanger{
+		&broadCastMessange{
+			broadCaster: &entity.BroadCaster{
+				Clients:   make(map[*websocket.Conn]entity.Client),
+				Broadcast: make(chan entity.ChatMessage),
+			},
+			ctx: ctx,
+		},
+	}
+}
+
+// broadCastMessange is broadCastMessange struct
+type broadCastMessange struct {
 	broadCaster *entity.BroadCaster
 	ctx         context.Context
 }
 
-// NewBroadCastMessanger creates a new BroadCasterRepository
-func NewBroadCastMessanger(ctx context.Context) repository.BroadCasterRepository {
-	return &BroadCastMessanger{
-		broadCaster: &entity.BroadCaster{
-			Clients:   make(map[*websocket.Conn]entity.Client),
-			Broadcast: make(chan entity.ChatMessage),
-		},
-		ctx: ctx,
-	}
-}
-
-//SetNewClient is set new Client
-func (bcm *BroadCastMessanger) SetNewClient(websocket *websocket.Conn, identifier, clientid string) {
+// SetNewClient is set new Client
+func (bcm *broadCastMessange) SetNewClient(websocket *websocket.Conn, identifier, clientid string) {
 	bcm.broadCaster.Clients[websocket] = entity.Client{
 		Identifier: identifier,
 		ClientID:   clientid,
 	}
 }
 
-//DeleteClient is delete Client
-func (bcm *BroadCastMessanger) DeleteClient(websocket *websocket.Conn) {
+// DeleteClient is delete Client
+func (bcm *broadCastMessange) DeleteClient(websocket *websocket.Conn) {
 	delete(bcm.broadCaster.Clients, websocket)
 }
 
-//ReadMessage is send message
-func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier, clientid, username string) error {
+// ReadMessage is send message
+func (bcm *broadCastMessange) ReadMessage(websocket *websocket.Conn, identifier, clientid, username string) error {
 	// Read
 	var message entity.ChatMessage
 	err := websocket.ReadJSON(&message)
@@ -55,8 +62,8 @@ func (bcm *BroadCastMessanger) ReadMessage(websocket *websocket.Conn, identifier
 	return nil
 }
 
-//BroadcastMessages is send Broadcast Messages
-func (bcm *BroadCastMessanger) BroadcastMessages() {
+// BroadcastMessages is send Broadcast Messages
+func (bcm *broadCastMessange) BroadcastMessages() {
 	for {
 		// メッセージ受け取り
 		message := <-bcm.broadCaster.Broadcast
