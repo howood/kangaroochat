@@ -65,6 +65,6 @@ func (au AccountUsecase) SetRoom(form entity.CreateRoomForm) (string, error) {
 
 func (au AccountUsecase) createToken(identifier, username string) (string, error) {
 	jwtinstance := actor.NewJwtOperator(au.Ctx, username, false, identifier)
-	tokenstr := jwtinstance.CreateToken(actor.TokenSecret)
+	tokenstr := jwtinstance.CreateToken()
 	return tokenstr, nil
 }

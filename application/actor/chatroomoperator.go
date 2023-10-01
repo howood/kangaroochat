@@ -10,19 +10,24 @@ import (
 	"github.com/howood/kangaroochat/infrastructure/uuid"
 )
 
-// ChatRoomOperator struct
+// chatRoom struct
 type ChatRoomOperator struct {
+	repository.ChatRoomRepository
+}
+
+// NewChatRoomOperator creates a new ChatRoomRepository
+func NewChatRoomOperator(ctx context.Context) *ChatRoomOperator {
+	return &ChatRoomOperator{&chatRoom{ctx: ctx}}
+}
+
+// chatRoom struct
+type chatRoom struct {
 	roomData entity.ChatRoom
 	ctx      context.Context
 }
 
-// NewChatRoomOperator creates a new ChatRoomRepository
-func NewChatRoomOperator(ctx context.Context) repository.ChatRoomRepository {
-	return &ChatRoomOperator{ctx: ctx}
-}
-
-//Set sets roomname and password to  roomdata
-func (e *ChatRoomOperator) Set(roomname, password string) error {
+// Set sets roomname and password to  roomdata
+func (e *chatRoom) Set(roomname, password string) error {
 	hashedpassword, salt, err := PasswordOperator{}.GetHashedPassword(password)
 	if err != nil {
 		return err
@@ -35,22 +40,22 @@ func (e *ChatRoomOperator) Set(roomname, password string) error {
 }
 
 // GetRoomName returns roomname of roomdata
-func (e *ChatRoomOperator) GetRoomName() string {
+func (e *chatRoom) GetRoomName() string {
 	return e.roomData.RoomName
 }
 
 // GetIdentifier returns Identifier of roomdata
-func (e *ChatRoomOperator) GetIdentifier() string {
+func (e *chatRoom) GetIdentifier() string {
 	return e.roomData.Identifier
 }
 
 // ComparePassword compares input password to roomdata password
-func (e *ChatRoomOperator) ComparePassword(password string) error {
+func (e *chatRoom) ComparePassword(password string) error {
 	return PasswordOperator{}.ComparePassword(e.roomData.HashedPassword, password, e.roomData.Salt)
 }
 
 // GobEncode serialized roomdata to bytes
-func (e *ChatRoomOperator) GobEncode() ([]byte, error) {
+func (e *chatRoom) GobEncode() ([]byte, error) {
 	w := new(bytes.Buffer)
 	encoder := gob.NewEncoder(w)
 
@@ -74,7 +79,7 @@ func (e *ChatRoomOperator) GobEncode() ([]byte, error) {
 }
 
 // GobDecode decode bytes to roomdata
-func (e *ChatRoomOperator) GobDecode(buf []byte) error {
+func (e *chatRoom) GobDecode(buf []byte) error {
 	r := bytes.NewBuffer(buf)
 	decoder := gob.NewDecoder(r)
 

@@ -19,32 +19,39 @@ const RoomTokenKey = "kc_room_token"
 
 // CookieOperator struct
 type CookieOperator struct {
+	repository.CookieRepository
+}
+
+// NewCookieOperator creates a new CookieRepository
+func NewCookieOperator(ctx context.Context, r *http.Request) *CookieOperator {
+	expired, _ := strconv.ParseInt(CookieExpired, 10, 64)
+	return &CookieOperator{
+		&cookieJar{
+			cookie: &entity.Cookie{
+				Cookie: new(http.Cookie),
+			},
+			expired: time.Duration(expired),
+			ctx:     ctx,
+		},
+	}
+}
+
+// cookieJar struct
+type cookieJar struct {
 	cookie  *entity.Cookie
 	expired time.Duration
 	ctx     context.Context
 }
 
-// NewCookieOperator creates a new CookieRepository
-func NewCookieOperator(ctx context.Context, r *http.Request) repository.CookieRepository {
-	expired, _ := strconv.ParseInt(CookieExpired, 10, 64)
-	return &CookieOperator{
-		cookie: &entity.Cookie{
-			Cookie: new(http.Cookie),
-		},
-		expired: time.Duration(expired),
-		ctx:     ctx,
-	}
-}
-
 // Set sets to Cookie
-func (co *CookieOperator) Set(key, value string) {
+func (co *cookieJar) Set(key, value string) {
 	co.cookie.Cookie.Name = key
 	co.cookie.Cookie.Value = value
 	co.cookie.Cookie.Expires = time.Now().Add(co.expired * time.Second)
 	co.cookie.Cookie.Path = "/"
 }
 
-//GetCookie get cookie struct
-func (co *CookieOperator) GetCookie() *http.Cookie {
+// GetCookie get cookie struct
+func (co *cookieJar) GetCookie() *http.Cookie {
 	return co.cookie.Cookie
 }

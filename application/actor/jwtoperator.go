@@ -12,8 +12,8 @@ import (
 	"github.com/howood/kangaroochat/library/utils"
 )
 
-// TokenExpired is token's expired
-var TokenExpired = utils.GetOsEnv("TOKEN_EXPIED", "3600")
+// tokenExpired is token's expired
+var tokenExpired = utils.GetOsEnv("TOKEN_EXPIED", "3600")
 
 // TokenSecret define token secrets
 var TokenSecret = utils.GetOsEnv("TOKEN_SECRET", "secretsecretdsfdsfsdfdsfsdf")
@@ -23,30 +23,37 @@ const JWTContextKey = "kangaroouser"
 
 // JwtOperator struct
 type JwtOperator struct {
+	repository.JwtClaimsRepository
+}
+
+// NewJwtOperator creates a new JwtClaimsRepository
+func NewJwtOperator(ctx context.Context, username string, admin bool, identifier string) *JwtOperator {
+	expired, _ := strconv.ParseInt(tokenExpired, 10, 64)
+	return &JwtOperator{
+		&jwtCreator{
+			jwtClaims: &entity.JwtClaims{
+				Name:       username,
+				Admin:      admin,
+				Identifier: identifier,
+				RegisteredClaims: jwt.RegisteredClaims{
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expired))),
+				},
+			},
+			ctx: ctx,
+		},
+	}
+}
+
+// jwtCreator struct
+type jwtCreator struct {
 	jwtClaims *entity.JwtClaims
 	ctx       context.Context
 }
 
-// NewJwtOperator creates a new JwtClaimsRepository
-func NewJwtOperator(ctx context.Context, username string, admin bool, identifier string) repository.JwtClaimsRepository {
-	expired, _ := strconv.ParseInt(TokenExpired, 10, 64)
-	return &JwtOperator{
-		jwtClaims: &entity.JwtClaims{
-			Name:       username,
-			Admin:      admin,
-			Identifier: identifier,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(expired))),
-			},
-		},
-		ctx: ctx,
-	}
-}
-
 // CreateToken creates a new token
-func (jc *JwtOperator) CreateToken(secret string) string {
+func (jc *jwtCreator) CreateToken() string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jc.jwtClaims)
-	tokenstring, err := token.SignedString([]byte(secret))
+	tokenstring, err := token.SignedString([]byte(TokenSecret))
 	if err != nil {
 		log.Error(jc.ctx, err.Error())
 	}
